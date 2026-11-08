@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('agenticgraph_executions', function (Blueprint $table) {
+            $table->string('id')->primary();
+
+            $table->string('graph_name');
+            $table->string('status');
+            $table->string('stream_id')->nullable();
+
+            $table->json('initial_state')->nullable();
+            $table->json('final_state')->nullable();
+            $table->unsignedInteger('checkpoint_node_count')->default(0);
+            $table->json('execution_options')->nullable();
+
+            $table->float('duration')->nullable();
+            $table->text('error')->nullable();
+
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('interrupted_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+
+            $table->timestamps();
+
+            $table->index(['graph_name', 'status']);
+            $table->index('status');
+            $table->index('stream_id');
+            $table->index(['created_at', 'status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('agenticgraph_executions');
+    }
+};

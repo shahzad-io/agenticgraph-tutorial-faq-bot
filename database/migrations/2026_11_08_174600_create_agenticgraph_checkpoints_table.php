@@ -1,0 +1,42 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('agenticgraph_checkpoints', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('graph_name');
+            $table->string('execution_id');
+            $table->string('current_node');
+            $table->json('state');
+            $table->json('metadata')->nullable();
+            $table->timestamp('created_at');
+
+            // Add critical indexes for performance
+            $table->index('execution_id'); // For loading checkpoints by execution
+            $table->index(['graph_name', 'created_at']); // For list() queries
+            $table->index('created_at'); // For cleanup() queries
+        });
+
+        Schema::table('agenticgraph_checkpoints', function (Blueprint $table) {
+            $table->foreign('execution_id')
+                ->references('id')
+                ->on('agenticgraph_executions')
+                ->cascadeOnDelete();
+        });
+
+    }
+
+    public function down(): void
+    {
+        Schema::table('agenticgraph_checkpoints', function (Blueprint $table) {
+            $table->dropForeign(['execution_id']);
+        });
+        Schema::dropIfExists('agenticgraph_checkpoints');
+    }
+};
